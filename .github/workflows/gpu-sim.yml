@@ -7,6 +7,8 @@ name: CUDA tests (simulated H100)
 # does not replace it.
 
 on:
+  push:
+    branches: [ verify-gpu-sim ]
   workflow_dispatch:
   pull_request:
     paths:
@@ -73,8 +75,8 @@ jobs:
           local rc=${PIPESTATUS[0]}
           echo "::endgroup::"
           if [ "$rc" -ne 0 ]; then echo "::error::$exe exited with $rc"; return 1; fi
-          if grep -q -i -E 'VirtualGPU error|No CUDA devices|skipp' "$exe.log"; then
-            echo "::error::$exe hit a simulator error, found no device or skipped"; return 1
+          if grep -q -i -E 'VirtualGPU error|No CUDA devices|skipping .*tests|tests skipped' "$exe.log"; then
+            echo "::error::$exe hit a simulator error, found no device or skipped the tests"; return 1
           fi
           if ! grep -q -F "$success" "$exe.log"; then
             echo "::error::$exe did not print '$success'"; return 1
